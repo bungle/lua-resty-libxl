@@ -563,14 +563,18 @@ function sheet:read(row, col, format)
 end
 
 function sheet:write(row, col, value, format)
+
     if value == nil then
         libxl.xlSheetWriteBlankA(self.___, row, col, format)
-    elseif type(value) == "string" then
-        libxl.xlSheetWriteStrA(self.___, row, col, value, format)
-    elseif type(value) == "number" then
-        libxl.xlSheetWriteNumA(self.___, row, col, value, format)
-    elseif type(value) == "boolean" then
-        libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
+    else
+        local  t = type(value)
+        if     t == "string" then
+            libxl.xlSheetWriteStrA(self.___, row, col, value, format)
+        elseif t == "number" then
+            libxl.xlSheetWriteNumA(self.___, row, col, value, format)
+        elseif t == "boolean" then
+            libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
+        end
     end
     return self
 end
