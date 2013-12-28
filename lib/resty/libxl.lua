@@ -506,6 +506,11 @@ function book:release()
     return self
 end
 
+function book:date_pack(year, month, day, hour, min, sec, msec)
+    return libxl.xlBookDatePackA(self.___,
+        year, month, day, hour, min, sec, msec)
+end
+
 function book:date_unpack(value)
     libxl.xlBookDateUnpackA(self.___,
         value, year[0], month[0], day[0],
