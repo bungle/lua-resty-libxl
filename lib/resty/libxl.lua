@@ -1,6 +1,9 @@
 local ffi        = require "ffi"
+local ffi_new    = ffi.new
 local ffi_cdef   = ffi.cdef
 local ffi_load   = ffi.load
+local C          = ffi.C
+local ffi_string = ffi.string
 
 local libxl = ffi_load("libxl")
 
@@ -132,10 +135,10 @@ typedef enum {ERRORTYPE_NULL = 0x00, ERRORTYPE_DIV_0 = 0x07,
 typedef enum {SHEETSTATE_VISIBLE, SHEETSTATE_HIDDEN, SHEETSTATE_VERYHIDDEN}
               SheetState;
 
-typedef struct tagBookHandle * BookHandle;
-typedef struct tagSheetHandle * SheetHandle;
+typedef struct tagBookHandle   * BookHandle;
+typedef struct tagSheetHandle  * SheetHandle;
 typedef struct tagFormatHandle * FormatHandle;
-typedef struct tagFontHandle * FontHandle;
+typedef struct tagFontHandle   * FontHandle;
 
 BookHandle   __cdecl xlCreateBookCA();
 BookHandle   __cdecl xlCreateXMLBookCA();
@@ -456,16 +459,40 @@ const char*  __cdecl xlFontNameA(FontHandle handle);
 void         __cdecl xlFontSetNameA(FontHandle handle, const char* name);
 ]]
 
+local year  = ffi_new("int[1]", 0)
+local month = ffi_new("int[1]", 0)
+local day   = ffi_new("int[1]", 0)
+local hour  = ffi_new("int[1]", 0)
+local min   = ffi_new("int[1]", 0)
+local sec   = ffi_new("int[1]", 0)
+local msec  = ffi_new("int[1]", 0)
+
 local book = { sheets = {} }
 local sheet = {}
 
 function book:new(opts)
-    local o = {}
+    opts = opts or {}
+    local o = { sheets = {} }
     setmetatable(o, self)
+    setmetatable(o.sheets, self.sheets)
     self.__index = self
-    o.___ = libxl.xlCreateXMLBookCA()
-    o.sheets.___ = o.___
+    self.sheets.__index = self.sheets
+    if opts.format == "xls" then
+        o.___ = libxl.xlCreateBookCA()
+    else
+        o.___ = libxl.xlCreateXMLBookCA()
+    end
+    o.sheets.book = o
     return o
+end
+
+function book:load(filename)
+    libxl.xlBookLoadA(self.___, filename)
+    local count = libxl.xlBookSheetCountA(self.___) - 1
+    for i=0,count do
+        self.sheets[#self.sheets + 1] = sheet:new(self, libxl.xlBookGetSheetA(self.___, i))
+    end
+    return self
 end
 
 function book:save(filename, release)
@@ -479,21 +506,60 @@ function book:release()
     return self
 end
 
+function book:date_unpack(value)
+    libxl.xlBookDateUnpackA(self.___,
+        value, year[0], month[0], day[0],
+        hour[0], min[0], sec[0], msec[0])
+    return  year[0], month[0], day[0], hour[0], min[0], sec[0], msec[0]
+end
+
 function book.sheets:add(name, initSheet)
-    if type(initSheet) ~= "table" then
-        initSheet = {}
-    end
-    self[#self + 1] = sheet:new(libxl.xlBookAddSheetA(
-        self.___, name, initSheet.___ or nil))
+    if type(initSheet) ~= "table" then initSheet = {} end
+    self[#self + 1] = sheet:new(self.book, libxl.xlBookAddSheetA(
+        self.book.___, name, initSheet.___ or nil))
     return self[#self]
 end
 
-function sheet:new(handle)
-    local o = {}
+function book.sheets:insert(index, name, initSheet)
+    if type(initSheet) ~= "table" then initSheet = {} end
+    table.insert(self, sheet:new(self.book, libxl.xlBookInsertSheetA(
+        self.book.___, index - 1, name, initSheet.___ or nil)), index)
+    return self[index]
+end
+
+function sheet:new(book, ___)
+    local o = { book = book, ___ = ___ }
     setmetatable(o, self)
     self.__index = self
-    o.___ = handle
     return o
+end
+
+function sheet:read(row, col, format)
+    if self:is_formula(row, col) then
+        return ffi_string(libxl.xlSheetReadFormulaA(self.___, row, col, format))
+    elseif self:is_date(row, col) then
+        return self.book:unpack_date(
+            libxl.xlSheetReadNumA(self.___, row, col, format)
+        )
+    else
+        local  t = libxl.xlSheetCellTypeA(self.___, row, col)
+        if     t == C.CELLTYPE_EMPTY   then
+            return ""
+        elseif t == C.CELLTYPE_NUMBER  then
+            return libxl.xlSheetReadNumA(self.___, row, col, format)
+        elseif t == C.CELLTYPE_STRING  then
+            return ffi_string(libxl.xlSheetReadStrA(self.___, row, col, format))
+        elseif t == C.CELLTYPE_BOOLEAN then
+            return libxl.xlSheetReadBoolA(self.___, row, col, format) ~= 0
+        elseif t == C.CELLTYPE_BLANK   then
+            libxl.xlSheetReadBlankA(self.___, row, col, format)
+            return nil
+        elseif t == C.CELLTYPE_ERROR   then
+            return libxl.xlSheetReadErrorA(self.___, row, col)
+        else
+            return nil
+        end
+    end
 end
 
 function sheet:write(row, col, value, format)
@@ -507,6 +573,34 @@ function sheet:write(row, col, value, format)
         libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
     end
     return self
+end
+
+function sheet:is_formula(row, col)
+    return libxl.xlSheetIsFormulaA(self.___, row, col) ~= 0
+end
+
+function sheet:is_date(row, col)
+    return libxl.xlSheetIsDateA(self.___, row, col) ~= 0
+end
+
+function sheet:cell_type(row, col)
+    local  t = libxl.xlSheetCellTypeA(self.___, row, col)
+    if     t == C.CELLTYPE_EMPTY   then
+    elseif t == C.CELLTYPE_NUMBER  then
+    elseif t == C.CELLTYPE_STRING  then
+    elseif t == C.CELLTYPE_BOOLEAN then
+    elseif t == C.CELLTYPE_BLANK   then
+    elseif t == C.CELLTYPE_ERROR   then
+    else
+    end
+end
+
+function sheet:__newindex(n, v)
+    if (n == "name") then
+        libxl.xlSheetSetNameA(self.___, v)
+    else
+        rawset(self, n, v)
+    end
 end
 
 return book
