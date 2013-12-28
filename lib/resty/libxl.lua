@@ -1,9 +1,8 @@
 local ffi        = require "ffi"
 local ffi_cdef   = ffi.cdef
-local ffi_new    = ffi.new
 local ffi_load   = ffi.load
 
-local libxl = ffi_load("/Users/tindeoopa/Sites/lua-resty-libxl/lib/resty/libxl.so")
+local libxl = ffi_load("libxl")
 
 ffi_cdef[[
 typedef enum {COLOR_BLACK = 8, COLOR_WHITE, COLOR_RED, COLOR_BRIGHTGREEN,
