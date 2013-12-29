@@ -468,6 +468,8 @@ local sec   = ffi_new("int[1]", 0)
 local msec  = ffi_new("int[1]", 0)
 
 local book = { sheets = {} }
+book.__index = book
+book.sheets.__index = book.sheets
 local sheet = {}
 
 function book:new(opts)
@@ -475,8 +477,6 @@ function book:new(opts)
     local o = { sheets = {} }
     setmetatable(o, self)
     setmetatable(o.sheets, self.sheets)
-    self.__index = self
-    self.sheets.__index = self.sheets
     if opts.format == "xls" then
         o.___ = libxl.xlCreateBookCA()
     else
@@ -535,8 +535,25 @@ end
 function sheet:new(book, ___)
     local o = { book = book, ___ = ___ }
     setmetatable(o, self)
-    self.__index = self
     return o
+end
+
+function sheet:__index(n)
+    if n == "name" then
+        return ffi_string(libxl.xlSheetNameA(self.___))
+    elseif n == "type" then
+        return libxl.xlBookSheetTypeA(self.___)
+    else
+        return sheet[n]
+    end
+end
+
+function sheet:__newindex(n, v)
+    if n == "name" then
+        libxl.xlSheetSetNameA(self.___, v)
+    else
+        rawset(self, n, v)
+    end
 end
 
 function sheet:read(row, col, format)
@@ -568,18 +585,15 @@ function sheet:read(row, col, format)
 end
 
 function sheet:write(row, col, value, format)
-
-    if value == nil then
+    local  t = type(value)
+    if     t == "string" then
+        libxl.xlSheetWriteStrA(self.___, row, col, value, format)
+    elseif t == "number" then
+        libxl.xlSheetWriteNumA(self.___, row, col, value, format)
+    elseif t == "boolean" then
+        libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
+    elseif t == "nil" then
         libxl.xlSheetWriteBlankA(self.___, row, col, format)
-    else
-        local  t = type(value)
-        if     t == "string" then
-            libxl.xlSheetWriteStrA(self.___, row, col, value, format)
-        elseif t == "number" then
-            libxl.xlSheetWriteNumA(self.___, row, col, value, format)
-        elseif t == "boolean" then
-            libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
-        end
     end
     return self
 end
@@ -601,14 +615,6 @@ function sheet:cell_type(row, col)
     elseif t == C.CELLTYPE_BLANK   then
     elseif t == C.CELLTYPE_ERROR   then
     else
-    end
-end
-
-function sheet:__newindex(n, v)
-    if (n == "name") then
-        libxl.xlSheetSetNameA(self.___, v)
-    else
-        rawset(self, n, v)
     end
 end
 
