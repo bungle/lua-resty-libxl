@@ -472,11 +472,11 @@ book.__index = book
 book.sheets.__index = book.sheets
 local sheet = {}
 
-function book:new(opts)
+function book.new(opts)
     opts = opts or {}
     local o = { sheets = {} }
-    setmetatable(o, self)
-    setmetatable(o.sheets, self.sheets)
+    setmetatable(o, book)
+    setmetatable(o.sheets, book.sheets)
     if opts.format == "xls" then
         o.___ = libxl.xlCreateBookCA()
     else
@@ -490,7 +490,7 @@ function book:load(filename)
     libxl.xlBookLoadA(self.___, filename)
     local count = libxl.xlBookSheetCountA(self.___) - 1
     for i=0,count do
-        self.sheets[#self.sheets + 1] = sheet:new(self, libxl.xlBookGetSheetA(self.___, i))
+        self.sheets[#self.sheets + 1] = sheet.new(self, libxl.xlBookGetSheetA(self.___, i))
     end
     return self
 end
@@ -520,26 +520,26 @@ end
 
 function book.sheets:add(name, initSheet)
     if type(initSheet) ~= "table" then initSheet = {} end
-    self[#self + 1] = sheet:new(self.book, libxl.xlBookAddSheetA(
+    self[#self + 1] = sheet.new(self.book, libxl.xlBookAddSheetA(
         self.book.___, name, initSheet.___ or nil))
     return self[#self]
 end
 
 function book.sheets:insert(index, name, initSheet)
     if type(initSheet) ~= "table" then initSheet = {} end
-    table.insert(self, sheet:new(self.book, libxl.xlBookInsertSheetA(
+    table.insert(self, sheet.new(self.book, libxl.xlBookInsertSheetA(
         self.book.___, index - 1, name, initSheet.___ or nil)), index)
     return self[index]
 end
 
-function sheet:new(book, ___)
+function sheet.new(book, ___)
     local o = { book = book, ___ = ___ }
-    setmetatable(o, self)
+    setmetatable(o, sheet)
     return o
 end
 
 function sheet:__index(n)
-    if n == "name" then
+    if     n == "name" then
         return ffi_string(libxl.xlSheetNameA(self.___))
     elseif n == "type" then
         return libxl.xlBookSheetTypeA(self.___)
