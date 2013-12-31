@@ -467,9 +467,11 @@ local min   = ffi_new("int[1]", 0)
 local sec   = ffi_new("int[1]", 0)
 local msec  = ffi_new("int[1]", 0)
 
+
+
+
 local book = { sheets = {} }
 book.__index = book
-book.sheets.__index = book.sheets
 local sheet = {}
 
 function book.new(opts)
@@ -482,16 +484,15 @@ function book.new(opts)
     else
         o.___ = libxl.xlCreateXMLBookCA()
     end
+    if type(opts.name) == "string" and type(opts.key) == "string" then
+        libxl.xlBookSetKeyA(o.___, opts.name, opts.key)
+    end
     o.sheets.book = o
     return o
 end
 
 function book:load(filename)
     libxl.xlBookLoadA(self.___, filename)
-    local count = libxl.xlBookSheetCountA(self.___) - 1
-    for i=0,count do
-        self.sheets[#self.sheets + 1] = sheet.new(self, libxl.xlBookGetSheetA(self.___, i))
-    end
     return self
 end
 
@@ -518,6 +519,31 @@ function book:date_unpack(value)
     return  year[0], month[0], day[0], hour[0], min[0], sec[0], msec[0]
 end
 
+function book.sheets:__index(n)
+    if     n == "active" then
+        return libxl.xlBookActiveSheetA(self.book.___) + 1
+    elseif n == "count" then
+        return libxl.xlBookSheetCountA(self.book.___)
+    elseif type(n) == "number" then
+        return sheet.new(self, libxl.xlBookGetSheetA(self.book.___, n - 1))
+    else
+        return book.sheets[n]
+    end
+end
+
+function book.sheets:__newindex(n, v)
+    if n == "active" then
+        print "active"
+        libxl.xlBookSetActiveSheetA(self.book.___, v - 1)
+    else
+        rawset(self, n, v)
+    end
+end
+
+function book.sheets:__len()
+    return libxl.xlBookSheetCountA(self.book.___)
+end
+
 function book.sheets:add(name, initSheet)
     if type(initSheet) ~= "table" then initSheet = {} end
     self[#self + 1] = sheet.new(self.book, libxl.xlBookAddSheetA(
@@ -530,6 +556,12 @@ function book.sheets:insert(index, name, initSheet)
     table.insert(self, sheet.new(self.book, libxl.xlBookInsertSheetA(
         self.book.___, index - 1, name, initSheet.___ or nil)), index)
     return self[index]
+end
+
+function book.sheets:del(index)
+    libxl.xlBookDelSheetA(self.book.___, index - 1)
+    table.remove(self, index)
+    return self
 end
 
 function sheet.new(book, ___)
@@ -557,27 +589,28 @@ function sheet:__newindex(n, v)
 end
 
 function sheet:read(row, col, format)
-    if self:is_formula(row, col) then
-        return ffi_string(libxl.xlSheetReadFormulaA(self.___, row, col, format))
-    elseif self:is_date(row, col) then
+    local r,c = row - 1,col - 1
+    if self:is_formula(r, c) then
+        return ffi_string(libxl.xlSheetReadFormulaA(self.___, r, c, format))
+    elseif self:is_date(r, c) then
         return self.book:unpack_date(
-            libxl.xlSheetReadNumA(self.___, row, col, format)
+            libxl.xlSheetReadNumA(self.___, r, c, format)
         )
     else
-        local  t = libxl.xlSheetCellTypeA(self.___, row, col)
+        local  t = libxl.xlSheetCellTypeA(self.___, r, c)
         if     t == C.CELLTYPE_EMPTY   then
             return ""
         elseif t == C.CELLTYPE_NUMBER  then
-            return libxl.xlSheetReadNumA(self.___, row, col, format)
+            return libxl.xlSheetReadNumA(self.___, r, c, format)
         elseif t == C.CELLTYPE_STRING  then
-            return ffi_string(libxl.xlSheetReadStrA(self.___, row, col, format))
+            return ffi_string(libxl.xlSheetReadStrA(self.___, r, c, format))
         elseif t == C.CELLTYPE_BOOLEAN then
-            return libxl.xlSheetReadBoolA(self.___, row, col, format) ~= 0
+            return libxl.xlSheetReadBoolA(self.___, r, c, format) ~= 0
         elseif t == C.CELLTYPE_BLANK   then
-            libxl.xlSheetReadBlankA(self.___, row, col, format)
+            libxl.xlSheetReadBlankA(self.___, r, c, format)
             return nil
         elseif t == C.CELLTYPE_ERROR   then
-            return libxl.xlSheetReadErrorA(self.___, row, col)
+            return libxl.xlSheetReadErrorA(self.___, r, c)
         else
             return nil
         end
@@ -585,29 +618,30 @@ function sheet:read(row, col, format)
 end
 
 function sheet:write(row, col, value, format)
+    local r,c = row - 1,col - 1
     local  t = type(value)
     if     t == "string" then
-        libxl.xlSheetWriteStrA(self.___, row, col, value, format)
+        libxl.xlSheetWriteStrA(self.___, r, c, value, format)
     elseif t == "number" then
-        libxl.xlSheetWriteNumA(self.___, row, col, value, format)
+        libxl.xlSheetWriteNumA(self.___, r, c, value, format)
     elseif t == "boolean" then
-        libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
+        libxl.xlSheetWriteBoolA(self.___, r, c, value, format)
     elseif t == "nil" then
-        libxl.xlSheetWriteBlankA(self.___, row, col, format)
+        libxl.xlSheetWriteBlankA(self.___, r, c, format)
     end
     return self
 end
 
 function sheet:is_formula(row, col)
-    return libxl.xlSheetIsFormulaA(self.___, row, col) ~= 0
+    return libxl.xlSheetIsFormulaA(self.___, row - 1, col - 1) ~= 0
 end
 
 function sheet:is_date(row, col)
-    return libxl.xlSheetIsDateA(self.___, row, col) ~= 0
+    return libxl.xlSheetIsDateA(self.___, row - 1, col - 1) ~= 0
 end
 
 function sheet:cell_type(row, col)
-    local  t = libxl.xlSheetCellTypeA(self.___, row, col)
+    local  t = libxl.xlSheetCellTypeA(self.___, row - 1, col - 1)
     if     t == C.CELLTYPE_EMPTY   then
     elseif t == C.CELLTYPE_NUMBER  then
     elseif t == C.CELLTYPE_STRING  then
@@ -619,4 +653,3 @@ function sheet:cell_type(row, col)
 end
 
 return book
-
