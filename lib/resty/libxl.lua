@@ -467,9 +467,6 @@ local min   = ffi_new("int[1]", 0)
 local sec   = ffi_new("int[1]", 0)
 local msec  = ffi_new("int[1]", 0)
 
-
-
-
 local book = { sheets = {} }
 book.__index = book
 local sheet = {}
