@@ -533,7 +533,6 @@ end
 
 function book.sheets:__newindex(n, v)
     if n == "active" then
-        print "active"
         libxl.xlBookSetActiveSheetA(self.book.___, v - 1)
     else
         rawset(self, n, v)
@@ -546,21 +545,20 @@ end
 
 function book.sheets:add(name, initSheet)
     if type(initSheet) ~= "table" then initSheet = {} end
-    self[#self + 1] = sheet.new(self.book, libxl.xlBookAddSheetA(
-        self.book.___, name, initSheet.___ or nil))
-    return self[#self]
+    return sheet.new(self.book,
+        libxl.xlBookAddSheetA(
+            self.book.___, name, initSheet.___ or nil))
 end
 
 function book.sheets:insert(index, name, initSheet)
     if type(initSheet) ~= "table" then initSheet = {} end
-    table.insert(self, sheet.new(self.book, libxl.xlBookInsertSheetA(
-        self.book.___, index - 1, name, initSheet.___ or nil)), index)
-    return self[index]
+    return sheet.new(self.book,
+        libxl.xlBookInsertSheetA(
+            self.book.___, index - 1, name, initSheet.___ or nil))
 end
 
 function book.sheets:del(index)
     libxl.xlBookDelSheetA(self.book.___, index - 1)
-    table.remove(self, index)
     return self
 end
 
