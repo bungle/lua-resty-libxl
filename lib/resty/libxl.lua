@@ -584,28 +584,28 @@ function sheet:__newindex(n, v)
 end
 
 function sheet:read(row, col, format)
-    local r,c = row - 1,col - 1
-    if self:is_formula(r, c) then
-        return ffi_string(libxl.xlSheetReadFormulaA(self.___, r, c, format))
-    elseif self:is_date(r, c) then
+    local row,col = row - 1,col - 1
+    if self:is_formula(row, col) then
+        return ffi_string(libxl.xlSheetReadFormulaA(self.___, row, col, format))
+    elseif self:is_date(row, col) then
         return self.book:unpack_date(
-            libxl.xlSheetReadNumA(self.___, r, c, format)
+            libxl.xlSheetReadNumA(self.___, row, col, format)
         )
     else
-        local  t = libxl.xlSheetCellTypeA(self.___, r, c)
+        local  t = libxl.xlSheetCellTypeA(self.___, row, col)
         if     t == C.CELLTYPE_EMPTY   then
             return ""
         elseif t == C.CELLTYPE_NUMBER  then
-            return libxl.xlSheetReadNumA(self.___, r, c, format)
+            return libxl.xlSheetReadNumA(self.___, row, col, format)
         elseif t == C.CELLTYPE_STRING  then
-            return ffi_string(libxl.xlSheetReadStrA(self.___, r, c, format))
+            return ffi_string(libxl.xlSheetReadStrA(self.___, row, col, format))
         elseif t == C.CELLTYPE_BOOLEAN then
-            return libxl.xlSheetReadBoolA(self.___, r, c, format) ~= 0
+            return libxl.xlSheetReadBoolA(self.___, row, col, format) ~= 0
         elseif t == C.CELLTYPE_BLANK   then
-            libxl.xlSheetReadBlankA(self.___, r, c, format)
+            libxl.xlSheetReadBlankA(self.___, row, col, format)
             return nil
         elseif t == C.CELLTYPE_ERROR   then
-            return libxl.xlSheetReadErrorA(self.___, r, c)
+            return libxl.xlSheetReadErrorA(self.___, row, col)
         else
             return nil
         end
@@ -613,16 +613,16 @@ function sheet:read(row, col, format)
 end
 
 function sheet:write(row, col, value, format)
-    local r,c = row - 1,col - 1
+    row,col = row - 1,col - 1
     local  t = type(value)
     if     t == "string" then
-        libxl.xlSheetWriteStrA(self.___, r, c, value, format)
+        libxl.xlSheetWriteStrA(self.___, row, col, value, format)
     elseif t == "number" then
-        libxl.xlSheetWriteNumA(self.___, r, c, value, format)
+        libxl.xlSheetWriteNumA(self.___, row, col, value, format)
     elseif t == "boolean" then
-        libxl.xlSheetWriteBoolA(self.___, r, c, value, format)
+        libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
     elseif t == "nil" then
-        libxl.xlSheetWriteBlankA(self.___, r, c, format)
+        libxl.xlSheetWriteBlankA(self.___, row, col, format)
     end
     return self
 end
