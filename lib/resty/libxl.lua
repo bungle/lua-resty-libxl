@@ -521,7 +521,7 @@ function book.sheets:__index(n)
     elseif n == "count" then
         return libxl.xlBookSheetCountA(self.book.___)
     elseif type(n) == "number" then
-        return sheet.new(self, libxl.xlBookGetSheetA(self.book.___, n - 1))
+        return sheet.new(self.book, libxl.xlBookGetSheetA(self.book.___, n - 1))
     else
         return book.sheets[n]
     end
