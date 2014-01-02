@@ -473,19 +473,18 @@ local sheet = {}
 
 function book.new(opts)
     opts = opts or {}
-    local o = { sheets = {} }
-    setmetatable(o, book)
-    setmetatable(o.sheets, book.sheets)
+    local self = setmetatable({ sheets = {} }, book)
+    setmetatable(self.sheets, book.sheets)
     if opts.format == "xls" then
-        o.___ = libxl.xlCreateBookCA()
+        self.___ = libxl.xlCreateBookCA()
     else
-        o.___ = libxl.xlCreateXMLBookCA()
+        self.___ = libxl.xlCreateXMLBookCA()
     end
     if type(opts.name) == "string" and type(opts.key) == "string" then
-        libxl.xlBookSetKeyA(o.___, opts.name, opts.key)
+        libxl.xlBookSetKeyA(self.___, opts.name, opts.key)
     end
-    o.sheets.book = o
-    return o
+    self.sheets.book = self
+    return self
 end
 
 function book:load(filename)
@@ -623,6 +622,8 @@ function sheet:write(row, col, value, format)
         libxl.xlSheetWriteBoolA(self.___, row, col, value, format)
     elseif t == "nil" then
         libxl.xlSheetWriteBlankA(self.___, row, col, format)
+    elseif t == "table" then
+
     end
     return self
 end
