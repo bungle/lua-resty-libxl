@@ -8,7 +8,7 @@ end
 
 function sheets:add(name, init)
     lib.xlBookAddSheetA(self.book.context, name, init and init.context or init)
-    return self[self.count]
+    return self[self.size]
 end
 
 function sheets:insert(index, name, init)
@@ -20,6 +20,10 @@ function sheets:del(index)
     return lib.xlBookDelSheetA(self.book.context, index - 1) == 1
 end
 
+function sheets:type(index)
+    return lib.xlBookSheetTypeA(self.book.context, index - 1)
+end
+
 function sheets:__len()
     return lib.xlBookSheetCountA(self.book.context)
 end
@@ -27,7 +31,7 @@ end
 function sheets:__index(n)
     if n == "active" then
         return lib.xlBookActiveSheetA(self.book.context) + 1
-    elseif n == "count" then
+    elseif n == "size" or n == "count" then
         return lib.xlBookSheetCountA(self.book.context)
     elseif type(n) == "number" then
         return sheet.new{ context = lib.xlBookGetSheetA(self.book.context, n - 1), type = lib.xlBookSheetTypeA(self.book.context, n - 1), book = self.book }
