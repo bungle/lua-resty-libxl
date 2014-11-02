@@ -1,23 +1,33 @@
-local lib    = require "resty.libxl.library"
-local sheet  = require "resty.libxl.sheet"
-local sheets = {}
+local lib     = require "resty.libxl.library"
+local sheet   = require "resty.libxl.sheet"
+local sheets  = {}
 
 function sheets.new(opts)
     return setmetatable(opts, sheets)
 end
 
 function sheets:add(name, init)
-    lib.xlBookAddSheetA(self.book.context, name, init and init.context or init)
-    return self[self.size]
+    if lib.xlBookAddSheetA(self.book.context, name, init and init.context or init) == nil then
+        return nil, self.book.error
+    else
+        return self[self.size]
+    end
 end
 
 function sheets:insert(index, name, init)
-    lib.xlBookInsertSheetA(self.book.context, index, name, init and init.context or init)
-    return self[index-1]
+    if lib.xlBookInsertSheetA(self.book.context, index, name, init and init.context or init) == nil then
+        return nil, self.book.error
+    else
+        return self[index-1]
+    end
 end
 
 function sheets:del(index)
-    return lib.xlBookDelSheetA(self.book.context, index - 1) == 1
+    if lib.xlBookDelSheetA(self.book.context, index - 1) == 0 then
+        return false, self.book.error
+    else
+        return true
+    end
 end
 
 function sheets:type(index)

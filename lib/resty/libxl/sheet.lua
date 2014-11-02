@@ -1,6 +1,7 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.sheet"
 local ffi     = require "ffi"
+local C       = ffi.C
 local ffi_str = ffi.string
 local lib     = require "resty.libxl.library"
 

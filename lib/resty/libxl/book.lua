@@ -1,55 +1,54 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.book"
-local ffi     = require "ffi"
-local ffi_gc  = ffi.gc
-local ffi_str = ffi.string
-local lib     = require "resty.libxl.library"
-local date    = require "resty.libxl.date"
-local color   = require "resty.libxl.color"
-local sheets  = require "resty.libxl.sheets"
-local formats = require "resty.libxl.formats"
-local fonts   = require "resty.libxl.fonts"
+require "resty.libxl.types.enum"
+local ffi      = require "ffi"
+local ffi_gc   = ffi.gc
+local ffi_str  = ffi.string
+local lib      = require "resty.libxl.library"
+local date     = require "resty.libxl.date"
+local color    = require "resty.libxl.color"
+local sheets   = require "resty.libxl.sheets"
+local formats  = require "resty.libxl.formats"
+local fonts    = require "resty.libxl.fonts"
+local pictures = require "resty.libxl.pictures"
 
 local book = {}
 
 function book:__index(n)
     if n == "version" then
         return lib.xlBookVersionA(self.context)
-    elseif n == "biff_version" or n == "biffversion" then
+    elseif n == "biffversion" then
         return lib.xlBookBiffVersionA(self.context)
-    elseif n == "ref_r1c1" or n == "refr1c1" then
-        return lib.xlBookRefR1C1A(self.context)
-    elseif n == "rgb_mode" or n == "rgbmode" then
-        return lib.xlBookRgbModeA(self.context)
-    elseif n == "is_date1904" or n == "isdate1904" then
-        return lib.xlBookRgbModeA(self.context)
-    elseif n == "is_template" or n == "istemplate" then
+    elseif n == "refr1c1" then
+        return lib.xlBookRefR1C1A(self.context) == 1
+    elseif n == "rgbmode" then
+        return lib.xlBookRgbModeA(self.context) == 1
+    elseif n == "date1904" then
+        return lib.xlBookIsDate1904A(self.context) == 1
+    elseif n == "template" then
         return lib.xlBookIsTemplateA(self.context) == 1
-    elseif n == "error_message" or n == "errormessage" then
+    elseif n == "error" then
         return ffi_str(lib.xlBookErrorMessageA(self.context))
-    elseif n == "picture_size" or n == "picturesize" then
-        return lib.xlBookPictureSizeA(self.context)
     else
         return rawget(book, n)
     end
 end
 
 function book:__newindex(n, v)
-    if n == "ref_r1c1" or n == "refr1c1" then
-        lib.xlBookSetRefR1C1A(self.context, v)
-    elseif n == "rgb_mode" or n == "rgbmode" then
-        lib.xlBookSetRgbModeA(self.context, v)
+    if n == "refr1c1" then
+        lib.xlBookSetRefR1C1A(self.context, v and 1 or 0)
+    elseif n == "rgbmode" then
+        lib.xlBookSetRgbModeA(self.context, v and 1 or 0)
     elseif n == "date1904" then
-        return lib.xlBookSetDate1904A(self.context)
+        return lib.xlBookSetDate1904A(self.context, v and 1 or 0)
     elseif n == "template" then
-        return lib.xlBookSetTemplateA(self.context)
+        return lib.xlBookSetTemplateA(self.context, v and 1 or 0)
     elseif n == "locale" then
-        return lib.xlBookSetLocaleA(self.context)
+        return lib.xlBookSetLocaleA(self.context, v)
     else
         rawset(book, n, v)
     end
 end
-
 
 function book.new(opts)
     opts = opts or {}
@@ -60,25 +59,44 @@ function book.new(opts)
     local self = setmetatable({
         context = context,
            date = date.new{ context = context },
-          color = color.new{ context = context },
+          color = color.new{ context = context }
     }, book)
-    book.sheets = sheets.new{ book = self }
-    book.formats = formats.new{ book = self }
-    book.fonts = fonts.new{ book = self }
+    self.sheets   = sheets.new{ book = self }
+    self.formats  = formats.new{ book = self }
+    self.fonts    = fonts.new{ book = self }
+    self.pictures = pictures.new{ book = self }
     return self
 end
 
 function book:load(filename)
-    return lib.xlBookLoadA(self.context, filename) == 1
+    if lib.xlBookLoadA(self.context, filename) == 1 then
+        return true
+    else
+        return false, self.error
+    end
 end
 
 function book:save(filename)
-    return lib.xlBookSaveA(self.context, filename) == 1
+    if lib.xlBookSaveA(self.context, filename) == 1 then
+        return true
+    else
+        return false, self.error
+    end
 end
 
 function book:release()
     return lib.xlBookReleaseA(self.context)
 end
+
+--[[
+int __cdecl xlBookLoadRawA(BookHandle handle, const char* data, unsigned size);
+int __cdecl xlBookSaveRawA(BookHandle handle, const char** data, unsigned* size);
+int __cdecl xlBookAddCustomNumFormatA(BookHandle handle, const char* customNumFormat);
+const char* __cdecl xlBookCustomNumFormatA(BookHandle handle, int fmt);
+int __cdecl xlBookGetPictureA(BookHandle handle, int index, const char** data, unsigned* size);
+void __cdecl xlBookSetDefaultFontA(BookHandle handle, const char* fontName, int fontSize);
+void __cdecl xlBookSetKeyA(BookHandle handle, const char* name, const char* key);
+--]]
 
 return book
 
