@@ -21,7 +21,7 @@ function formats:__index(n)
     if n == "size" or n == "count" then
         return lib.xlBookFormatSizeA(self.book.context)
     elseif type(n) == "number" then
-        return format.new{ context = lib.xlBookFormatA(self.book.context, n - 1) }
+        return format.new{ index = n, context = lib.xlBookFormatA(self.book.context, n - 1) }
     else
         return rawget(formats, n)
     end

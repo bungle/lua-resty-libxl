@@ -35,9 +35,9 @@ function pictures:__index(n)
     elseif type(n) == "number" then
         local type = lib.xlBookGetPictureA(self.book.context, n - 1, d, l)
         if type == C.PICTURETYPE_ERROR then
-            return nil
+            return nil, self.book.error
         else
-            return { type = type, data = ffi_str(d[0], l[0]), size = l[0] }
+            return { index = n, type = type, data = ffi_str(d[0], l[0]), size = l[0], offset = { x = 0, y = 0 } }
         end
     else
         return rawget(pictures, n)

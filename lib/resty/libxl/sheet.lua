@@ -8,6 +8,7 @@ local ffi          = require "ffi"
 local C            = ffi.C
 local ffi_str      = ffi.string
 local lib          = require "resty.libxl.library"
+local pictures     = require "resty.libxl.sheet.pictures"
 
 --[[
 APIs not implemented:
@@ -18,9 +19,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
 
  const char* __cdecl xlSheetReadCommentA(SheetHandle handle, int row, int col);
         void __cdecl xlSheetWriteCommentA(SheetHandle handle, int row, int col, const char* value, const char* author, int width, int height);
-
-         int __cdecl xlSheetIsDateA(SheetHandle handle, int row, int col);
-         int __cdecl xlSheetReadErrorA(SheetHandle handle, int row, int col);
 
       double __cdecl xlSheetColWidthA(SheetHandle handle, int col);
       double __cdecl xlSheetRowHeightA(SheetHandle handle, int row);
@@ -41,13 +39,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetMergeSizeA(SheetHandle handle);
          int __cdecl xlSheetMergeA(SheetHandle handle, int index, int* rowFirst, int* rowLast, int* colFirst, int* colLast);
          int __cdecl xlSheetDelMergeByIndexA(SheetHandle handle, int index);
-
-         int __cdecl xlSheetPictureSizeA(SheetHandle handle);
-         int __cdecl xlSheetGetPictureA(SheetHandle handle, int index, int* rowTop, int* colLeft, int* rowBottom, int* colRight,
-                                                                                  int* width, int* height, int* offset_x, int* offset_y);
-
-        void __cdecl xlSheetSetPictureA(SheetHandle handle, int row, int col, int pictureId, double scale, int offset_x, int offset_y);
-        void __cdecl xlSheetSetPicture2A(SheetHandle handle, int row, int col, int pictureId, int width, int height, int offset_x, int offset_y);
 
          int __cdecl xlSheetGetHorPageBreakA(SheetHandle handle, int index);
          int __cdecl xlSheetGetHorPageBreakSizeA(SheetHandle handle);
@@ -88,17 +79,11 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetPrintGridlinesA(SheetHandle handle);
         void __cdecl xlSheetSetPrintGridlinesA(SheetHandle handle, int print);
 
-         int __cdecl xlSheetZoomA(SheetHandle handle);
-        void __cdecl xlSheetSetZoomA(SheetHandle handle, int zoom);
-
          int __cdecl xlSheetPrintZoomA(SheetHandle handle);
         void __cdecl xlSheetSetPrintZoomA(SheetHandle handle, int zoom);
 
          int __cdecl xlSheetGetPrintFitA(SheetHandle handle, int* wPages, int* hPages);
         void __cdecl xlSheetSetPrintFitA(SheetHandle handle, int wPages, int hPages);
-
-         int __cdecl xlSheetLandscapeA(SheetHandle handle);
-        void __cdecl xlSheetSetLandscapeA(SheetHandle handle, int landscape);
 
          int __cdecl xlSheetPaperA(SheetHandle handle);
         void __cdecl xlSheetSetPaperA(SheetHandle handle, int paper);
@@ -172,7 +157,9 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
 local sheet = {}
 
 function sheet.new(opts)
-    return setmetatable(opts, sheet)
+    local self = setmetatable(opts, sheet)
+    self.pictures = pictures.new{ sheet = self }
+    return self
 end
 
 function sheet:write(row, col, value, format)
@@ -224,14 +211,26 @@ function sheet:clear(rf, rl, cf, cl)
     rl = rl or 1048575
     cf = cf or 0
     cl = cl or 16383
-    if rf < 0 then rf = 0 end
-    if rf > 1048575 then rf = 1048575 end
-    if rl < 0 then rl = 0 end
-    if rl > 1048575 then rl = 1048575 end
-    if cf < 0 then cf = 0 end
-    if cf > 16383 then cf = 16383 end
-    if cl < 0 then cl = 0 end
-    if cl > 16383 then cl = 16383 end
+    if rf < 0 then
+        rf = 0
+    elseif rf > 1048575 then
+        rf = 1048575
+    end
+    if rl < 0 then
+        rl = 0
+    elseif rl > 1048575 then
+        rl = 1048575
+    end
+    if cf < 0 then
+        cf = 0
+    elseif cf > 16383 then
+        cf = 16383
+    end
+    if cl < 0 then
+        cl = 0
+    elseif cl > 16383 then
+        cl = 16383
+    end
     lib.xlSheetClearA(self.context, rf, rl, cf, cl)
 end
 
@@ -250,6 +249,10 @@ end
 function sheet:__index(n)
     if n == "name" then
         return ffi_str(lib.xlSheetNameA(self.context))
+    elseif n == "landscape" then
+        return lib.xlSheetLandscapeA(self.context) == 1
+    elseif n == "zoom" then
+        return lib.xlSheetZoomA(self.context)
     elseif n == "protect" then
         return lib.xlSheetProtectA(self.context) == 1
     elseif n == "hidden" then
@@ -262,6 +265,10 @@ end
 function sheet:__newindex(n, v)
     if n == "name" then
         lib.xlSheetSetNameA(self.context, v)
+    elseif n == "landscape" then
+        lib.xlSheetSetLandscapeA(self.context, v)
+    elseif n == "zoom" then
+        lib.xlSheetSetZoomA(self.context, v)
     elseif n == "protect" then
         lib.xlSheetSetProtectA(self.context, v)
     elseif n == "hidden" then

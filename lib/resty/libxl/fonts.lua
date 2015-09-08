@@ -30,7 +30,7 @@ function fonts:__index(n)
     elseif n == "default" then
         return { name = ffi_str(lib.xlBookDefaultFontA(self.book.context, s)), size = s[0] }
     elseif type(n) == "number" then
-        return font.new{ context = lib.xlBookFontA(self.book.context, n - 1) }
+        return font.new{ index = n, context = lib.xlBookFontA(self.book.context, n - 1) }
     else
         return rawget(fonts, n)
     end

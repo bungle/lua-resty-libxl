@@ -49,7 +49,7 @@ function sheets:__index(n)
     elseif n == "size" or n == "count" then
         return lib.xlBookSheetCountA(self.book.context)
     elseif type(n) == "number" then
-        return sheet.new{ context = lib.xlBookGetSheetA(self.book.context, n - 1), type = lib.xlBookSheetTypeA(self.book.context, n - 1), book = self.book }
+        return sheet.new{ index = n, context = lib.xlBookGetSheetA(self.book.context, n - 1), type = lib.xlBookSheetTypeA(self.book.context, n - 1), book = self.book }
     else
         return rawget(sheets, n)
     end
