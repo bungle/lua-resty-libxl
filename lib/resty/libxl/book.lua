@@ -1,16 +1,20 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.book"
 require "resty.libxl.types.enum"
-local ffi      = require "ffi"
-local ffi_gc   = ffi.gc
-local ffi_str  = ffi.string
-local lib      = require "resty.libxl.library"
-local date     = require "resty.libxl.date"
-local color    = require "resty.libxl.color"
-local sheets   = require "resty.libxl.sheets"
-local formats  = require "resty.libxl.formats"
-local fonts    = require "resty.libxl.fonts"
-local pictures = require "resty.libxl.pictures"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
+local type         = type
+local ffi          = require "ffi"
+local ffi_gc       = ffi.gc
+local ffi_str      = ffi.string
+local lib          = require "resty.libxl.library"
+local date         = require "resty.libxl.date"
+local color        = require "resty.libxl.color"
+local sheets       = require "resty.libxl.sheets"
+local formats      = require "resty.libxl.formats"
+local fonts        = require "resty.libxl.fonts"
+local pictures     = require "resty.libxl.pictures"
 
 local book = {}
 
@@ -46,7 +50,7 @@ function book:__newindex(n, v)
     elseif n == "locale" then
         return lib.xlBookSetLocaleA(self.context, v)
     else
-        rawset(book, n, v)
+        rawset(self, n, v)
     end
 end
 
@@ -87,16 +91,6 @@ end
 function book:release()
     return lib.xlBookReleaseA(self.context)
 end
-
---[[
-int __cdecl xlBookLoadRawA(BookHandle handle, const char* data, unsigned size);
-int __cdecl xlBookSaveRawA(BookHandle handle, const char** data, unsigned* size);
-int __cdecl xlBookAddCustomNumFormatA(BookHandle handle, const char* customNumFormat);
-const char* __cdecl xlBookCustomNumFormatA(BookHandle handle, int fmt);
-int __cdecl xlBookGetPictureA(BookHandle handle, int index, const char** data, unsigned* size);
-void __cdecl xlBookSetDefaultFontA(BookHandle handle, const char* fontName, int fontSize);
-void __cdecl xlBookSetKeyA(BookHandle handle, const char* name, const char* key);
---]]
 
 return book
 

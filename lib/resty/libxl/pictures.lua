@@ -1,9 +1,12 @@
-local lib        = require "resty.libxl.library"
-local ffi        = require "ffi"
-local C          = ffi.C
-local ffi_new    = ffi.new
-local ffi_str    = ffi.string
-local pictures   = {}
+local lib          = require "resty.libxl.library"
+local setmetatable = setmetatable
+local rawget       = rawget
+local type         = type
+local ffi          = require "ffi"
+local C            = ffi.C
+local ffi_new      = ffi.new
+local ffi_str      = ffi.string
+local pictures     = {}
 
 local d = ffi_new("const char*[1]")
 local l = ffi_new("unsigned[1]", 0)

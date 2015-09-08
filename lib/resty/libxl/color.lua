@@ -1,6 +1,7 @@
-local lib     = require "resty.libxl.library"
-local ffi     = require "ffi"
-local ffi_new = ffi.new
+local lib          = require "resty.libxl.library"
+local setmetatable = setmetatable
+local ffi          = require "ffi"
+local ffi_new      = ffi.new
 
 local r = ffi_new("int[1]", 0)
 local g = ffi_new("int[1]", 0)

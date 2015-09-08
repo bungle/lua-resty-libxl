@@ -1,9 +1,13 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.sheet"
-local ffi     = require "ffi"
-local C       = ffi.C
-local ffi_str = ffi.string
-local lib     = require "resty.libxl.library"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
+local type         = type
+local ffi          = require "ffi"
+local C            = ffi.C
+local ffi_str      = ffi.string
+local lib          = require "resty.libxl.library"
 
 local sheet = {}
 
@@ -79,7 +83,7 @@ function sheet:__newindex(n, v)
     if n == "name" then
         lib.xlSheetSetNameA(self.context, v)
     else
-        rawset(sheet, n, v)
+        rawset(self, n, v)
     end
 end
 

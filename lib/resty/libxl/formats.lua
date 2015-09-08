@@ -1,5 +1,7 @@
 local lib     = require "resty.libxl.library"
 local format  = require "resty.libxl.format"
+local rawget  = rawget
+local type    = type
 local formats = {}
 
 function formats.new(opts)

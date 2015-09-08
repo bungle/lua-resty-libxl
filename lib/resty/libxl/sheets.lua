@@ -1,6 +1,11 @@
-local lib     = require "resty.libxl.library"
-local sheet   = require "resty.libxl.sheet"
-local sheets  = {}
+local lib          = require "resty.libxl.library"
+local sheet        = require "resty.libxl.sheet"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
+local type         = type
+
+local sheets = {}
 
 function sheets.new(opts)
     return setmetatable(opts, sheets)
@@ -54,7 +59,7 @@ function sheets:__newindex(n, v)
     if n == "active" then
         lib.xlBookSetActiveSheetA(self.book.context, v - 1)
     else
-        rawset(sheets, n, v)
+        rawset(self, n, v)
     end
 end
 

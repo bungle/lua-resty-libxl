@@ -1,6 +1,6 @@
-local ffi        = require "ffi"
-local C          = ffi.C
-local ffi_cdef   = ffi.cdef
+local ffi      = require "ffi"
+local C        = ffi.C
+local ffi_cdef = ffi.cdef
 
 ffi_cdef[[
 enum Color {COLOR_BLACK = 8, COLOR_WHITE, COLOR_RED, COLOR_BRIGHTGREEN, COLOR_BLUE, COLOR_YELLOW, COLOR_PINK, COLOR_TURQUOISE, COLOR_DARKRED,

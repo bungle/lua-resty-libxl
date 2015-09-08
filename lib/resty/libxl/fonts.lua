@@ -1,10 +1,13 @@
-local lib     = require "resty.libxl.library"
-local font    = require "resty.libxl.font"
-local ffi     = require "ffi"
-local C       = ffi.C
-local ffi_new = ffi.new
-local ffi_str = ffi.string
-local fonts   = {}
+local lib          = require "resty.libxl.library"
+local font         = require "resty.libxl.font"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
+local ffi          = require "ffi"
+local C            = ffi.C
+local ffi_new      = ffi.new
+local ffi_str      = ffi.string
+local fonts        = {}
 
 local s = ffi_new("int[1]", 0)
 
@@ -19,6 +22,14 @@ end
 
 function fonts:__len()
     return lib.xlBookFontSizeA(self.book.context)
+end
+
+function fonts:__newindex(n, v)
+    if n == "default" then
+        lib.xlBookSetDefaultFontA(self.book.context, v.name, v.size)
+    else
+        rawset(self, n, v)
+    end
 end
 
 function fonts:__index(n)

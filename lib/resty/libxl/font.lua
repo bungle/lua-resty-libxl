@@ -1,8 +1,11 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.font"
-local ffi     = require "ffi"
-local ffi_str = ffi.string
-local lib     = require "resty.libxl.library"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
+local ffi          = require "ffi"
+local ffi_str      = ffi.string
+local lib          = require "resty.libxl.library"
 
 local font = {}
 
@@ -50,7 +53,7 @@ function font:__newindex(n, v)
     elseif n == "name" then
         lib.xlFontSetNameA(self.context, v)
     else
-        rawset(font, n, v)
+        rawset(self, n, v)
     end
 end
 

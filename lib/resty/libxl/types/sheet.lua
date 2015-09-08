@@ -1,5 +1,5 @@
-local ffi        = require "ffi"
-local ffi_cdef   = ffi.cdef
+local ffi      = require "ffi"
+local ffi_cdef = ffi.cdef
 
 ffi_cdef[[
          int __cdecl xlSheetCellTypeA(SheetHandle handle, int row, int col);
@@ -141,8 +141,13 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetPrintRowColA(SheetHandle handle);
         void __cdecl xlSheetSetPrintRowColA(SheetHandle handle, int print);
 
+         int __cdecl xlSheetPrintRepeatRowsA(SheetHandle handle, int* rowFirst, int* rowLast);
         void __cdecl xlSheetSetPrintRepeatRowsA(SheetHandle handle, int rowFirst, int rowLast);
+
+         int __cdecl xlSheetPrintRepeatColsA(SheetHandle handle, int* colFirst, int* colLast);
         void __cdecl xlSheetSetPrintRepeatColsA(SheetHandle handle, int colFirst, int colLast);
+
+         int __cdecl xlSheetPrintAreaA(SheetHandle handle, int* rowFirst, int* rowLast, int* colFirst, int* colLast);
         void __cdecl xlSheetSetPrintAreaA(SheetHandle handle, int rowFirst, int rowLast, int colFirst, int colLast);
 
         void __cdecl xlSheetClearPrintRepeatsA(SheetHandle handle);
@@ -174,6 +179,8 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
 
          int __cdecl xlSheetRightToLeftA(SheetHandle handle);
         void __cdecl xlSheetSetRightToLeftA(SheetHandle handle, int rightToLeft);
+
+        void __cdecl xlSheetSetAutoFitAreaA(SheetHandle handle, int rowFirst, int colFirst, int rowLast, int colLast);
 
         void __cdecl xlSheetAddrToRowColA(SheetHandle handle, const char* addr, int* row, int* col, int* rowRelative, int* colRelative);
  const char* __cdecl xlSheetRowColToAddrA(SheetHandle handle, int row, int col, int rowRelative, int colRelative);

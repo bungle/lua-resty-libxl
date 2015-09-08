@@ -1,5 +1,5 @@
-local ffi        = require "ffi"
-local ffi_cdef   = ffi.cdef
+local ffi      = require "ffi"
+local ffi_cdef = ffi.cdef
 
 ffi_cdef[[
         int __cdecl xlFontSizeA(FontHandle handle);

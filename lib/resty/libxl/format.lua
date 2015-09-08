@@ -1,6 +1,9 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.format"
-local lib     = require "resty.libxl.library"
+local lib          = require "resty.libxl.library"
+local setmetatable = setmetatable
+local rawget       = rawget
+local rawset       = rawset
 
 local format = {}
 
@@ -116,7 +119,7 @@ function format:__newindex(n, v)
     elseif n == "hidden" then
         lib.xlFormatSetHiddenA(self.context, v)
     else
-        rawset(format, n, v)
+        rawset(self, n, v)
     end
 end
 
