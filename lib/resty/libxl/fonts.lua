@@ -38,7 +38,7 @@ end
 
 function fonts:__newindex(n, v)
     if n == "default" then
-        lib.xlBookSetDefaultFontA(self.book.context, v.name, v.size)
+        lib.xlBookSetDefaultFontA(self.book.context, v.name or v[1], v.size or v[2])
     else
         rawset(self, n, v)
     end
