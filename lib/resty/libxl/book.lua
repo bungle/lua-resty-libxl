@@ -18,6 +18,14 @@ local pictures     = require "resty.libxl.pictures"
 
 local book = {}
 
+--[[
+APIs not implemented:
+        int __cdecl xlBookLoadRawA(BookHandle handle, const char* data, unsigned size);
+        int __cdecl xlBookSaveRawA(BookHandle handle, const char** data, unsigned* size);
+        int __cdecl xlBookAddCustomNumFormatA(BookHandle handle, const char* customNumFormat);
+const char* __cdecl xlBookCustomNumFormatA(BookHandle handle, int fmt);
+]]
+
 function book:__index(n)
     if n == "version" then
         return lib.xlBookVersionA(self.context)
@@ -93,4 +101,3 @@ function book:release()
 end
 
 return book
-

@@ -61,7 +61,7 @@ function format:__index(n)
     elseif n == "hidden" then
         return lib.xlFormatHiddenA(self.context) == 1
     else
-        rawget(format, n)
+        return rawget(format, n)
     end
 end
 

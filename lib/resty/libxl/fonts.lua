@@ -24,14 +24,6 @@ function fonts:__len()
     return lib.xlBookFontSizeA(self.book.context)
 end
 
-function fonts:__newindex(n, v)
-    if n == "default" then
-        lib.xlBookSetDefaultFontA(self.book.context, v.name, v.size)
-    else
-        rawset(self, n, v)
-    end
-end
-
 function fonts:__index(n)
     if n == "size" or n == "count" then
         return lib.xlBookFontSizeA(self.book.context)
@@ -41,6 +33,14 @@ function fonts:__index(n)
         return font.new{ context = lib.xlBookFontA(self.book.context, n - 1) }
     else
         return rawget(fonts, n)
+    end
+end
+
+function fonts:__newindex(n, v)
+    if n == "default" then
+        lib.xlBookSetDefaultFontA(self.book.context, v.name, v.size)
+    else
+        rawset(self, n, v)
     end
 end
 

@@ -31,7 +31,7 @@ function font:__index(n)
     elseif n == "name" then
         return ffi_str(lib.xlFontNameA(self.context))
     else
-        rawget(font, n)
+        return rawget(font, n)
     end
 end
 
