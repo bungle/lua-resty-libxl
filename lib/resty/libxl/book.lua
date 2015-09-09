@@ -7,6 +7,7 @@ local rawset       = rawset
 local type         = type
 local ffi          = require "ffi"
 local ffi_gc       = ffi.gc
+local ffi_new      = ffi.new
 local ffi_str      = ffi.string
 local lib          = require "resty.libxl.library"
 local date         = require "resty.libxl.date"
@@ -20,11 +21,12 @@ local book = {}
 
 --[[
 APIs not implemented:
-        int __cdecl xlBookLoadRawA(BookHandle handle, const char* data, unsigned size);
-        int __cdecl xlBookSaveRawA(BookHandle handle, const char** data, unsigned* size);
         int __cdecl xlBookAddCustomNumFormatA(BookHandle handle, const char* customNumFormat);
 const char* __cdecl xlBookCustomNumFormatA(BookHandle handle, int fmt);
 ]]
+
+local d = ffi_new("const char*[1]")
+local l = ffi_new("unsigned[1]", 0)
 
 function book:__index(n)
     if n == "version" then
@@ -80,20 +82,30 @@ function book.new(opts)
     return self
 end
 
-function book:load(filename)
-    if lib.xlBookLoadA(self.context, filename) == 1 then
-        return true
-    else
-        return false, self.error
+function book:load(file, size)
+    if size then
+        if lib.xlBookLoadRawA(self.context, file, size) == 1 then
+            return true
+        end
+        return nil, self.error
     end
+    if lib.xlBookLoadA(self.context, file) == 1 then
+        return true
+    end
+    return nil, self.error
 end
 
 function book:save(filename)
-    if lib.xlBookSaveA(self.context, filename) == 1 then
-        return true
-    else
-        return false, self.error
+    if filename then
+        if lib.xlBookSaveA(self.context, filename) == 1 then
+            return true
+        end
+        return nil, self.error
     end
+    if lib.xlBookSaveRawA(self.context, d, l) == 0 then
+        return nil, self.error
+    end
+    return ffi_str(d[0], l[0]), l[0]
 end
 
 function book:release()

@@ -6,8 +6,6 @@ local ffi          = require "ffi"
 local ffi_new      = ffi.new
 local pictures     = {}
 
-local d = ffi_new("const char*[1]")
-local l = ffi_new("unsigned[1]", 0)
 local rt = ffi_new("int[1]", 0)
 local cl = ffi_new("int[1]", 0)
 local rb = ffi_new("int[1]", 0)
