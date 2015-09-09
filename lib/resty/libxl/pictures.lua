@@ -30,7 +30,7 @@ function pictures:__len()
 end
 
 function pictures:__index(n)
-    if n == "size" or n == "count" then
+    if n == "size" or n == "count" or n == "n" then
         return lib.xlBookPictureSizeA(self.book.context)
     elseif type(n) == "number" then
         local type = lib.xlBookGetPictureA(self.book.context, n - 1, d, l)

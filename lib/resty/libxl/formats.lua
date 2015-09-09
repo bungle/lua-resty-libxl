@@ -18,7 +18,7 @@ function formats:__len()
 end
 
 function formats:__index(n)
-    if n == "size" or n == "count" then
+    if n == "size" or n == "count" or n == "n" then
         return lib.xlBookFormatSizeA(self.book.context)
     elseif type(n) == "number" then
         return format.new{ index = n, context = lib.xlBookFormatA(self.book.context, n - 1) }

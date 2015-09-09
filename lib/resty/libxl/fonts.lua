@@ -3,6 +3,7 @@ local font         = require "resty.libxl.font"
 local setmetatable = setmetatable
 local rawget       = rawget
 local rawset       = rawset
+local type         = type
 local ffi          = require "ffi"
 local C            = ffi.C
 local ffi_new      = ffi.new
@@ -25,7 +26,7 @@ function fonts:__len()
 end
 
 function fonts:__index(n)
-    if n == "size" or n == "count" then
+    if n == "size" or n == "count" or n == "n" then
         return lib.xlBookFontSizeA(self.book.context)
     elseif n == "default" then
         return { name = ffi_str(lib.xlBookDefaultFontA(self.book.context, s)), size = s[0] }

@@ -9,6 +9,7 @@ local C            = ffi.C
 local ffi_str      = ffi.string
 local lib          = require "resty.libxl.library"
 local pictures     = require "resty.libxl.sheet.pictures"
+local hyperlinks   = require "resty.libxl.sheet.hyperlinks"
 
 --[[
 APIs not implemented:
@@ -136,11 +137,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetNamedRangeSizeA(SheetHandle handle);
  const char* __cdecl xlSheetNamedRangeA(SheetHandle handle, int index, int* rowFirst, int* rowLast, int* colFirst, int* colLast, int* scopeId, int* hidden);
 
-         int __cdecl xlSheetHyperlinkSizeA(SheetHandle handle);
- const char* __cdecl xlSheetHyperlinkA(SheetHandle handle, int index, int* rowFirst, int* rowLast, int* colFirst, int* colLast);
-         int __cdecl xlSheetDelHyperlinkA(SheetHandle handle, int index);
-        void __cdecl xlSheetAddHyperlinkA(SheetHandle handle, const char* hyperlink, int rowFirst, int rowLast, int colFirst, int colLast);
-
         void __cdecl xlSheetGetTopLeftViewA(SheetHandle handle, int* row, int* col);
         void __cdecl xlSheetSetTopLeftViewA(SheetHandle handle, int row, int col);
 
@@ -159,6 +155,7 @@ local sheet = {}
 function sheet.new(opts)
     local self = setmetatable(opts, sheet)
     self.pictures = pictures.new{ sheet = self }
+    self.hyperlinks = hyperlinks.new{ sheet = self }
     return self
 end
 

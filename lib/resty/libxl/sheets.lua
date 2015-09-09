@@ -46,7 +46,7 @@ end
 function sheets:__index(n)
     if n == "active" then
         return lib.xlBookActiveSheetA(self.book.context) + 1
-    elseif n == "size" or n == "count" then
+    elseif n == "size" or n == "count" or n == "n" then
         return lib.xlBookSheetCountA(self.book.context)
     elseif type(n) == "number" then
         return sheet.new{ index = n, context = lib.xlBookGetSheetA(self.book.context, n - 1), type = lib.xlBookSheetTypeA(self.book.context, n - 1), book = self.book }

@@ -51,7 +51,7 @@ function pictures:__len()
 end
 
 function pictures:__index(n)
-    if n == "size" or n == "count" then
+    if n == "size" or n == "count" or n == "n" then
         return lib.xlSheetPictureSizeA(self.sheet.context)
     elseif type(n) == "number" then
         local i = lib.xlSheetGetPictureA(self.sheet.context, n - 1, rt, cl, rb, cr, w, h, ox, oy)
