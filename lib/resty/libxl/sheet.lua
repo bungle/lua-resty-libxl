@@ -226,7 +226,6 @@ function sheet:isformula(row, col)
 end
 
 function sheet:isdate(row, col)
-    print(lib.xlSheetIsDateA(self.context, row - 1, col - 1))
     return lib.xlSheetIsDateA(self.context, row - 1, col - 1) == 1
 end
 
