@@ -40,12 +40,10 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetDelMergeByIndexA(SheetHandle handle, int index);
 
          int __cdecl xlSheetGetHorPageBreakA(SheetHandle handle, int index);
-         int __cdecl xlSheetGetVerPageBreakA(SheetHandle handle, int index);
-
          int __cdecl xlSheetGetHorPageBreakSizeA(SheetHandle handle);
-         int __cdecl xlSheetSetHorPageBreakA(SheetHandle handle, int row, int pageBreak);
+
+         int __cdecl xlSheetGetVerPageBreakA(SheetHandle handle, int index);
          int __cdecl xlSheetGetVerPageBreakSizeA(SheetHandle handle);
-         int __cdecl xlSheetSetVerPageBreakA(SheetHandle handle, int col, int pageBreak);
 
         void __cdecl xlSheetSplitA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetSplitInfoA(SheetHandle handle, int* row, int* col);
@@ -84,8 +82,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
 
         void __cdecl xlSheetGetTopLeftViewA(SheetHandle handle, int* row, int* col);
         void __cdecl xlSheetSetTopLeftViewA(SheetHandle handle, int row, int col);
-
-        void __cdecl xlSheetSetAutoFitAreaA(SheetHandle handle, int rowFirst, int colFirst, int rowLast, int colLast);
 
         void __cdecl xlSheetAddrToRowColA(SheetHandle handle, const char* addr, int* row, int* col, int* rowRelative, int* colRelative);
  const char* __cdecl xlSheetRowColToAddrA(SheetHandle handle, int row, int col, int rowRelative, int colRelative);
@@ -166,23 +162,12 @@ function sheet:readdate(row, col, format)
     end
 end
 
-function sheet:clearprint(type)
-    type = type or "area"
-    if type == "all" then
-        lib.xlSheetClearPrintAreaA(self.context)
-        lib.xlSheetClearPrintRepeatsA(self.context)
-    elseif type == "area" then
-        lib.xlSheetClearPrintAreaA(self.context)
-    elseif type == "repeats" then
-        lib.xlSheetClearPrintRepeatsA(self.context)
-    end
-end
-
 function sheet:clear(rf, rl, cf, cl)
-    rf = rf or 0
-    rl = rl or 1048575
-    cf = cf or 0
-    cl = cl or 16383
+    rf = rf or 1
+    rl = rl or 1048576
+    cf = cf or 1
+    cl = cl or 16384
+    rf, rl, cf, cl = rf - 1, rl - 1, cf - 1, cl - 1
     if rf < 0 then
         rf = 0
     elseif rf > 1048575 then
@@ -204,6 +189,22 @@ function sheet:clear(rf, rl, cf, cl)
         cl = 16383
     end
     lib.xlSheetClearA(self.context, rf, rl, cf, cl)
+end
+
+function sheet:clearprint(type)
+    type = type or "area"
+    if type == "all" then
+        lib.xlSheetClearPrintAreaA(self.context)
+        lib.xlSheetClearPrintRepeatsA(self.context)
+    elseif type == "area" then
+        lib.xlSheetClearPrintAreaA(self.context)
+    elseif type == "repeats" then
+        lib.xlSheetClearPrintRepeatsA(self.context)
+    end
+end
+
+function sheet:autofit(rf, cf, rl, cl)
+    lib.xlSheetSetAutoFitAreaA(self.context, rf - 1, cf - 1, rl - 1, cl - 1)
 end
 
 function sheet:isformula(row, col)
