@@ -23,7 +23,9 @@ function date:pack(year, month, day, hour, min, sec, msec)
 end
 
 function date:unpack(value)
-    lib.xlBookDateUnpackA(self.context, value, year, month, day, hour, min, sec, msec)
+    if lib.xlBookDateUnpackA(self.context, value, year, month, day, hour, min, sec, msec) == 0 then
+        return nil
+    end
     return  year[0], month[0], day[0], hour[0], min[0], sec[0], msec[0]
 end
 

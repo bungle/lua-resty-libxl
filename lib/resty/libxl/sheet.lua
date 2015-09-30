@@ -152,14 +152,20 @@ end
 
 function sheet:readformula(row, col, format)
     if self:isformula(row, col) then
-        return ffi_str(lib.xlSheetReadFormulaA(self.context, row - 1, col - 1, format))
+        local formula = lib.xlSheetReadFormulaA(self.context, row - 1, col - 1, format)
+        if formula == nil then
+            return nil, self.book.error
+        end
+        return ffi_str(formula)
     end
+    return nil
 end
 
 function sheet:readdate(row, col, format)
     if self:isdate(row, col) then
         return self.book.date:unpack(self:read(row, col, format))
     end
+    return nil
 end
 
 function sheet:clear(rf, rl, cf, cl)
