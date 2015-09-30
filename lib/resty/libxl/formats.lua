@@ -10,7 +10,7 @@ end
 
 function formats:add(name, init)
     lib.xlBookAddFormatA(self.book.context, name, init and init.context or init)
-    return self[self.count]
+    return self[self.size]
 end
 
 function formats:__len()

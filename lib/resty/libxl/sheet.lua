@@ -16,8 +16,6 @@ APIs not implemented:
 FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
         void __cdecl xlSheetSetCellFormatA(SheetHandle handle, int row, int col, FormatHandle format);
 
-         int __cdecl xlSheetWriteFormulaA(SheetHandle handle, int row, int col, const char* value, FormatHandle format);
-
  const char* __cdecl xlSheetReadCommentA(SheetHandle handle, int row, int col);
         void __cdecl xlSheetWriteCommentA(SheetHandle handle, int row, int col, const char* value, const char* author, int width, int height);
 
@@ -68,11 +66,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetRemoveRowA(SheetHandle handle, int rowFirst, int rowLast);
 
          int __cdecl xlSheetCopyCellA(SheetHandle handle, int rowSrc, int colSrc, int rowDst, int colDst);
-
-         int __cdecl xlSheetFirstRowA(SheetHandle handle);
-         int __cdecl xlSheetLastRowA(SheetHandle handle);
-         int __cdecl xlSheetFirstColA(SheetHandle handle);
-         int __cdecl xlSheetLastColA(SheetHandle handle);
 
          int __cdecl xlSheetDisplayGridlinesA(SheetHandle handle);
         void __cdecl xlSheetSetDisplayGridlinesA(SheetHandle handle, int show);
@@ -161,45 +154,67 @@ end
 
 function sheet:write(row, col, value, format)
     row, col = row - 1, col - 1
+    local  r
     local  t = type(value)
     if     t == "string" then
-        lib.xlSheetWriteStrA(self.context, row, col, value, format)
+        r = lib.xlSheetWriteStrA(self.context, row, col, value, format or 0)
     elseif t == "number" then
-        lib.xlSheetWriteNumA(self.context, row, col, value, format)
+        r = lib.xlSheetWriteNumA(self.context, row, col, value, format or 0)
     elseif t == "boolean" then
-        lib.xlSheetWriteBoolA(self.context, row, col, value, format)
+        r = lib.xlSheetWriteBoolA(self.context, row, col, value, format or 0)
     elseif t == "nil" then
-        lib.xlSheetWriteBlankA(self.context, row, col, format)
+        r = lib.xlSheetWriteBlankA(self.context, row, col, format or 0)
     elseif t == "table" then
-        lib.xlSheetWriteStrA(self.context, row, col, tostring(value), format)
+        r = lib.xlSheetWriteStrA(self.context, row, col, tostring(value), format or 0)
     end
-    return self
+    if r == 0 then
+        return nil, self.book.error
+    end
+    return true
+end
+
+function sheet:writeformula(row, col, value, format)
+    if lib.xlSheetWriteFormulaA(self.context, row - 1, col - 1, value, format) == 0 then
+        return nil, self.book.error
+    end
+    return true
+end
+
+function sheet:writedate(row, col, year, month, day, hour, min, sec, msec, format)
+    local date = self.book.date:pack(year, month, day, hour, min, sec, msec)
+    return self:write(row, col, date, format)
 end
 
 function sheet:read(row, col, format)
-    local row,col = row - 1,col - 1
-    if self:isformula(row, col) then
-        return ffi_str(lib.xlSheetReadFormulaA(self.context, row, col, format))
-    elseif self:isdate(row, col) then
-        return self.book.date:unpack(lib.xlSheetReadNumA(self.context, row, col, format))
+    local r, c = row - 1, col - 1
+    local  t = self:celltype(row, col)
+    if     t == C.CELLTYPE_EMPTY   then
+        return ""
+    elseif t == C.CELLTYPE_NUMBER  then
+        return lib.xlSheetReadNumA(self.context, r, c, format)
+    elseif t == C.CELLTYPE_STRING  then
+        return ffi_str(lib.xlSheetReadStrA(self.context, r, c, format))
+    elseif t == C.CELLTYPE_BOOLEAN then
+        return lib.xlSheetReadBoolA(self.context, r, c, format) ~= 0
+    elseif t == C.CELLTYPE_BLANK   then
+        lib.xlSheetReadBlankA(self.context, r, c, format)
+        return nil
+    elseif t == C.CELLTYPE_ERROR   then
+        return lib.xlSheetReadErrorA(self.context, r, c)
     else
-        local  t = self:celltype(row, col)
-        if     t == C.CELLTYPE_EMPTY   then
-            return ""
-        elseif t == C.CELLTYPE_NUMBER  then
-            return lib.xlSheetReadNumA(self.context, row, col, format)
-        elseif t == C.CELLTYPE_STRING  then
-            return ffi_str(lib.xlSheetReadStrA(self.context, row, col, format))
-        elseif t == C.CELLTYPE_BOOLEAN then
-            return lib.xlSheetReadBoolA(self.context, row, col, format) ~= 0
-        elseif t == C.CELLTYPE_BLANK   then
-            lib.xlSheetReadBlankA(self.context, row, col, format)
-            return nil
-        elseif t == C.CELLTYPE_ERROR   then
-            return lib.xlSheetReadErrorA(self.context, row, col)
-        else
-            return nil
-        end
+        return nil
+    end
+end
+
+function sheet:readformula(row, col, format)
+    if self:isformula(row, col) then
+        return ffi_str(lib.xlSheetReadFormulaA(self.context, row - 1, col - 1, format))
+    end
+end
+
+function sheet:readdate(row, col, format)
+    if self:isdate(row, col) then
+        return self.book.date:unpack(self:read(row, col, format))
     end
 end
 
@@ -236,6 +251,7 @@ function sheet:isformula(row, col)
 end
 
 function sheet:isdate(row, col)
+    print(lib.xlSheetIsDateA(self.context, row - 1, col - 1))
     return lib.xlSheetIsDateA(self.context, row - 1, col - 1) == 1
 end
 
@@ -254,6 +270,14 @@ function sheet:__index(n)
         return lib.xlSheetProtectA(self.context) == 1
     elseif n == "hidden" then
         return lib.xlSheetHiddenA(self.context) == 1
+    elseif n == "firstrow" then
+        return lib.xlSheetFirstRowA(self.context) + 1
+    elseif n == "firstcol" then
+        return lib.xlSheetFirstColA(self.context) + 1
+    elseif n == "lastrow" then
+        return lib.xlSheetLastRowA(self.context) + 1
+    elseif n == "lastcol" then
+        return lib.xlSheetLastColA(self.context) + 1
     else
         return rawget(sheet, n)
     end

@@ -8,7 +8,7 @@ local ffi_new      = ffi.new
 local ffi_str      = ffi.string
 local pictures     = {}
 
-local d = ffi_new("const char*[1]")
+local d = ffi_new "const char*[1]"
 local l = ffi_new("unsigned[1]", 0)
 local s = ffi_new("int[1]", 0)
 
