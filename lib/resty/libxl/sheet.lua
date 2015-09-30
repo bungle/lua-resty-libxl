@@ -61,9 +61,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetGetPrintFitA(SheetHandle handle, int* wPages, int* hPages);
         void __cdecl xlSheetSetPrintFitA(SheetHandle handle, int wPages, int hPages);
 
-         int __cdecl xlSheetSetHeaderA(SheetHandle handle, const char* header, double margin);
-         int __cdecl xlSheetSetFooterA(SheetHandle handle, const char* footer, double margin);
-
          int __cdecl xlSheetPrintRepeatRowsA(SheetHandle handle, int* rowFirst, int* rowLast);
         void __cdecl xlSheetSetPrintRepeatRowsA(SheetHandle handle, int rowFirst, int rowLast);
 
@@ -309,6 +306,14 @@ function sheet:__newindex(n, v)
         lib.xlSheetSetPrintRowColA(self.context, v)
     elseif n == "print-zoom" then
         lib.xlSheetSetPrintZoomA(self.context, v)
+    elseif n == "header" then
+        lib.xlSheetSetHeaderA(self.context, v, self["header-margin"])
+    elseif n == "header-margin" then
+        lib.xlSheetSetHeaderA(self.context, self["header"], v)
+    elseif n == "footer" then
+        lib.xlSheetSetFooterA(self.context, v, self["footer-margin"])
+    elseif n == "footer-margin" then
+        lib.xlSheetSetFooterA(self.context, self["footer"], v)
     elseif n == "margin-left" then
         lib.xlSheetSetMarginLeftA(self.context, v)
     elseif n == "margin-right" then
