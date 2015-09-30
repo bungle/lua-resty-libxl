@@ -40,12 +40,11 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetDelMergeByIndexA(SheetHandle handle, int index);
 
          int __cdecl xlSheetGetHorPageBreakA(SheetHandle handle, int index);
-         int __cdecl xlSheetGetHorPageBreakSizeA(SheetHandle handle);
-
          int __cdecl xlSheetGetVerPageBreakA(SheetHandle handle, int index);
-         int __cdecl xlSheetGetVerPageBreakSizeA(SheetHandle handle);
 
+         int __cdecl xlSheetGetHorPageBreakSizeA(SheetHandle handle);
          int __cdecl xlSheetSetHorPageBreakA(SheetHandle handle, int row, int pageBreak);
+         int __cdecl xlSheetGetVerPageBreakSizeA(SheetHandle handle);
          int __cdecl xlSheetSetVerPageBreakA(SheetHandle handle, int col, int pageBreak);
 
         void __cdecl xlSheetSplitA(SheetHandle handle, int row, int col);
@@ -54,10 +53,7 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetGroupRowsA(SheetHandle handle, int rowFirst, int rowLast, int collapsed);
          int __cdecl xlSheetGroupColsA(SheetHandle handle, int colFirst, int colLast, int collapsed);
 
-         int __cdecl xlSheetGroupSummaryBelowA(SheetHandle handle);
         void __cdecl xlSheetSetGroupSummaryBelowA(SheetHandle handle, int below);
-
-         int __cdecl xlSheetGroupSummaryRightA(SheetHandle handle);
         void __cdecl xlSheetSetGroupSummaryRightA(SheetHandle handle, int right);
 
          int __cdecl xlSheetInsertColA(SheetHandle handle, int colFirst, int colLast);
@@ -67,48 +63,26 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
 
          int __cdecl xlSheetCopyCellA(SheetHandle handle, int rowSrc, int colSrc, int rowDst, int colDst);
 
-         int __cdecl xlSheetDisplayGridlinesA(SheetHandle handle);
         void __cdecl xlSheetSetDisplayGridlinesA(SheetHandle handle, int show);
-
-         int __cdecl xlSheetPrintGridlinesA(SheetHandle handle);
         void __cdecl xlSheetSetPrintGridlinesA(SheetHandle handle, int print);
-
-         int __cdecl xlSheetPrintZoomA(SheetHandle handle);
         void __cdecl xlSheetSetPrintZoomA(SheetHandle handle, int zoom);
 
          int __cdecl xlSheetGetPrintFitA(SheetHandle handle, int* wPages, int* hPages);
         void __cdecl xlSheetSetPrintFitA(SheetHandle handle, int wPages, int hPages);
-
-         int __cdecl xlSheetPaperA(SheetHandle handle);
         void __cdecl xlSheetSetPaperA(SheetHandle handle, int paper);
-
- const char* __cdecl xlSheetHeaderA(SheetHandle handle);
          int __cdecl xlSheetSetHeaderA(SheetHandle handle, const char* header, double margin);
-      double __cdecl xlSheetHeaderMarginA(SheetHandle handle);
-
- const char* __cdecl xlSheetFooterA(SheetHandle handle);
          int __cdecl xlSheetSetFooterA(SheetHandle handle, const char* footer, double margin);
-      double __cdecl xlSheetFooterMarginA(SheetHandle handle);
 
-         int __cdecl xlSheetHCenterA(SheetHandle handle);
         void __cdecl xlSheetSetHCenterA(SheetHandle handle, int hCenter);
-
-         int __cdecl xlSheetVCenterA(SheetHandle handle);
         void __cdecl xlSheetSetVCenterA(SheetHandle handle, int vCenter);
 
-      double __cdecl xlSheetMarginLeftA(SheetHandle handle);
         void __cdecl xlSheetSetMarginLeftA(SheetHandle handle, double margin);
-
-      double __cdecl xlSheetMarginRightA(SheetHandle handle);
         void __cdecl xlSheetSetMarginRightA(SheetHandle handle, double margin);
 
-      double __cdecl xlSheetMarginTopA(SheetHandle handle);
         void __cdecl xlSheetSetMarginTopA(SheetHandle handle, double margin);
 
-      double __cdecl xlSheetMarginBottomA(SheetHandle handle);
         void __cdecl xlSheetSetMarginBottomA(SheetHandle handle, double margin);
 
-         int __cdecl xlSheetPrintRowColA(SheetHandle handle);
         void __cdecl xlSheetSetPrintRowColA(SheetHandle handle, int print);
 
          int __cdecl xlSheetPrintRepeatRowsA(SheetHandle handle, int* rowFirst, int* rowLast);
@@ -133,14 +107,12 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
         void __cdecl xlSheetGetTopLeftViewA(SheetHandle handle, int* row, int* col);
         void __cdecl xlSheetSetTopLeftViewA(SheetHandle handle, int row, int col);
 
-         int __cdecl xlSheetRightToLeftA(SheetHandle handle);
         void __cdecl xlSheetSetRightToLeftA(SheetHandle handle, int rightToLeft);
 
         void __cdecl xlSheetSetAutoFitAreaA(SheetHandle handle, int rowFirst, int colFirst, int rowLast, int colLast);
 
         void __cdecl xlSheetAddrToRowColA(SheetHandle handle, const char* addr, int* row, int* col, int* rowRelative, int* colRelative);
  const char* __cdecl xlSheetRowColToAddrA(SheetHandle handle, int row, int col, int rowRelative, int colRelative);
-
  ]]
 
 local sheet = {}
@@ -270,14 +242,50 @@ function sheet:__index(n)
         return lib.xlSheetProtectA(self.context) == 1
     elseif n == "hidden" then
         return lib.xlSheetHiddenA(self.context) == 1
-    elseif n == "firstrow" then
+    elseif n == "first-row" then
         return lib.xlSheetFirstRowA(self.context) + 1
-    elseif n == "firstcol" then
+    elseif n == "first-col" then
         return lib.xlSheetFirstColA(self.context) + 1
-    elseif n == "lastrow" then
+    elseif n == "last-row" then
         return lib.xlSheetLastRowA(self.context) + 1
-    elseif n == "lastcol" then
+    elseif n == "last-col" then
         return lib.xlSheetLastColA(self.context) + 1
+    elseif n == "group-summary-below" then
+        return lib.xlSheetGroupSummaryBelowA(self.context) == 1
+    elseif n == "group-summary-right" then
+        return lib.xlSheetGroupSummaryRightA(self.context) == 1
+    elseif n == "display-gridlines" then
+        return lib.xlSheetDisplayGridlinesA(self.context) == 1
+    elseif n == "print-gridlines" then
+        return lib.xlSheetPrintGridlinesA(self.context) == 1
+    elseif n == "print-row-col" then
+        return lib.xlSheetPrintRowColA(self.context) == 1
+    elseif n == "print-zoom" then
+        return lib.xlSheetPrintZoomA(self.context)
+    elseif n == "header" then
+        return lib.xlSheetHeaderA(self.context)
+    elseif n == "header-margin" then
+        return lib.xlSheetHeaderMarginA(self.context)
+    elseif n == "footer" then
+        return lib.xlSheetFooterA(self.context)
+    elseif n == "footer-margin" then
+        return lib.xlSheetFooterMarginA(self.context)
+    elseif n == "margin-left" then
+        return lib.xlSheetMarginLeftA(self.context)
+    elseif n == "margin-right" then
+        return lib.xlSheetMarginRightA(self.context)
+    elseif n == "margin-top" then
+        return lib.xlSheetMarginTopA(self.context)
+    elseif n == "margin-bottom" then
+        return lib.xlSheetMarginBottomA(self.context)
+    elseif n == "paper" then
+        return lib.xlSheetPaperA(self.context)
+    elseif n == "h-center" then
+        return lib.xlSheetHCenterA(self.context) == 1
+    elseif n == "v-center" then
+        return lib.xlSheetVCenterA(self.context) == 1
+    elseif n == "right-to-left" then
+        return lib.xlSheetRightToLeftA(self.context) == 1
     else
         return rawget(sheet, n)
     end
