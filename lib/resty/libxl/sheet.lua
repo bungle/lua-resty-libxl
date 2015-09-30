@@ -48,9 +48,6 @@ FormatHandle __cdecl xlSheetCellFormatA(SheetHandle handle, int row, int col);
         void __cdecl xlSheetSplitA(SheetHandle handle, int row, int col);
          int __cdecl xlSheetSplitInfoA(SheetHandle handle, int* row, int* col);
 
-         int __cdecl xlSheetGroupRowsA(SheetHandle handle, int rowFirst, int rowLast, int collapsed);
-         int __cdecl xlSheetGroupColsA(SheetHandle handle, int colFirst, int colLast, int collapsed);
-
          int __cdecl xlSheetInsertColA(SheetHandle handle, int colFirst, int colLast);
          int __cdecl xlSheetInsertRowA(SheetHandle handle, int rowFirst, int rowLast);
          int __cdecl xlSheetRemoveColA(SheetHandle handle, int colFirst, int colLast);
@@ -208,6 +205,20 @@ end
 
 function sheet:autofit(rf, cf, rl, cl)
     lib.xlSheetSetAutoFitAreaA(self.context, rf - 1, cf - 1, rl - 1, cl - 1)
+end
+
+function sheet:grouprows(rf, rl, collapsed)
+    if lib.xlSheetGroupRowsA(self.context, rf - 1, rl - 1, collapsed) == 0 then
+        return nil, self.book.error
+    end
+    return true
+end
+
+function sheet:groupcols(cf, cl, collapsed)
+    if lib.xlSheetGroupColsA(self.context, cf - 1, cl - 1, collapsed) == 0 then
+        return nil, self.book.error
+    end
+    return true
 end
 
 function sheet:isformula(row, col)
