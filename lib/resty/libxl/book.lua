@@ -25,7 +25,7 @@ APIs not implemented:
 const char* __cdecl xlBookCustomNumFormatA(BookHandle handle, int fmt);
 ]]
 
-local d = ffi_new("const char*[1]")
+local d = ffi_new "const char*[1]"
 local l = ffi_new("unsigned[1]", 0)
 
 function book:__index(n)

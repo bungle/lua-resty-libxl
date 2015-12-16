@@ -5,7 +5,6 @@ local rawget       = rawget
 local rawset       = rawset
 local type         = type
 local ffi          = require "ffi"
-local C            = ffi.C
 local ffi_new      = ffi.new
 local ffi_str      = ffi.string
 local fonts        = {}

@@ -1,6 +1,7 @@
 require "resty.libxl.types.handle"
 require "resty.libxl.types.format"
 local lib          = require "resty.libxl.library"
+local font         = require "resty.libxl.font"
 local setmetatable = setmetatable
 local rawget       = rawget
 local rawset       = rawset

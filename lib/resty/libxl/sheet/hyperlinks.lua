@@ -6,6 +6,7 @@ local ffi          = require "ffi"
 local C            = ffi.C
 local ffi_new      = ffi.new
 local ffi_str      = ffi.string
+local type         = type
 local hyperlinks   = {}
 
 local rf = ffi_new("int[1]", 0)
@@ -18,7 +19,7 @@ function hyperlinks.new(opts)
 end
 
 function hyperlinks:add(hl, rf, rl, cf, cl)
-    lib.xlSheetAddHyperlinkA(self.sheet.context, link, hl, rf, rl, cf, cl)
+    lib.xlSheetAddHyperlinkA(self.sheet.context, hl, rf, rl, cf, cl)
     return self[self.size]
 end
 

@@ -4,6 +4,7 @@ local setmetatable = setmetatable
 local rawget       = rawget
 local rawset       = rawset
 local type         = type
+local tostring     = tostring
 local ffi          = require "ffi"
 local C            = ffi.C
 local ffi_str      = ffi.string

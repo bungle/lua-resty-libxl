@@ -1,8 +1,9 @@
-local lib     = require "resty.libxl.library"
-local format  = require "resty.libxl.format"
-local rawget  = rawget
-local type    = type
-local formats = {}
+local lib          = require "resty.libxl.library"
+local format       = require "resty.libxl.format"
+local rawget       = rawget
+local type         = type
+local setmetatable = setmetatable
+local formats      = {}
 
 function formats.new(opts)
     return setmetatable(opts, formats)
